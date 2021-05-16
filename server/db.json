@@ -19,10 +19,10 @@
   "orders": {
     "items": [
       {
-        "id": 3,
-        "name": "Hummus with pita chips (350 cal)",
-        "description": "Garlic roasted hummus served with lightly salted pita chips.",
-        "qty": 3
+        "id": 1,
+        "name": "Garden salad (300 cal)",
+        "description": "Cherry tomatoes, cucumber slices, and julienne carrots on a bed of mixed greens with a light poppy seed dressing.",
+        "qty": 2
       }
     ]
   }
