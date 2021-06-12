@@ -1,12 +1,17 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import logger from "morgan";
+const low = require("lowdb");
+const FileSync = require("lowdb/adapters/FileSync");
 
-var indexRouter = require("./routes/index");
+const adapter = new FileSync("db.json");
+export const db = low(adapter);
+
+db.defaults({ menuItems: [], orders: [] }).write();
+
 var menuRouter = require("./routes/menu");
-var checkoutRouter = require("./routes/checkout");
+// var checkoutRouter = require("./routes/checkout");
 
 var app = express();
 
@@ -18,11 +23,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../public")));
 
-app.use("/", indexRouter);
 app.use("/menu", menuRouter);
-app.use("/checkout", checkoutRouter);
+// app.use("/checkout", checkoutRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -39,5 +43,10 @@ app.use(function (err, req, res, next) {
 	res.status(err.status || 500);
 	res.render("error");
 });
+
+// app.get("/menu", async (req, res, next) => {
+// 	const { menuItems } = db.get("menuItems").value();
+// 	res.json(menuItems);
+// });
 
 module.exports = app;

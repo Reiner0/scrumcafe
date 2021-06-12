@@ -1,19 +1,40 @@
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import CartItem from "./CartItem";
-import { selectCartItems, selectCartStatus, checkoutCart } from "./cartSlice";
+import { cartState, cartStatusState } from "../../recoil/atoms";
+import { cartStatsState } from "../../recoil/selectors";
 
 const Cart = () => {
-	const dispatch = useDispatch();
-	const cartItems = useSelector(selectCartItems);
-	const cartStatus = useSelector(selectCartStatus);
-	const checkingOut = cartStatus === "pending";
-	const complete = cartStatus === "succeeded";
+	const [cart, setCart] = useRecoilState(cartState);
+	const [cartStatus, setCartStatus] = useRecoilState(cartStatusState);
+	const { totalCalories } = useRecoilValue(cartStatsState);
 
-	if (complete) {
+	const { isComplete, isCheckingOut } = cartStatus;
+
+	const checkout = async () => {
+		try {
+			setCartStatus((oldStatus) => ({ ...oldStatus, isCheckingOut: true }));
+			await fetch("/checkout", {
+				method: "post",
+				body: JSON.stringify(cart),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+			setCart([]);
+			localStorage.setItem("cart", JSON.stringify([]));
+			setCartStatus((oldStatus) => ({ ...oldStatus, isComplete: true }));
+		} catch (err) {
+			throw new Error(err.message);
+		} finally {
+			setCartStatus((oldStatus) => ({ ...oldStatus, isCheckingOut: false }));
+		}
+	};
+
+	if (isComplete) {
 		return <></>;
 	} else {
 		return (
@@ -21,15 +42,18 @@ const Cart = () => {
 				<Row>
 					<h4>Shopping Cart</h4>
 				</Row>
-				{cartItems.map((cartItem) => (
-					<CartItem key={cartItem.id} item={cartItem} disabled={checkingOut} />
+				{cart.map((cartItem) => (
+					<CartItem key={cartItem.id} item={cartItem} disabled={isCheckingOut} />
 				))}
-				{cartItems.length > 0 ? (
-					<Row>
-						<Button onClick={() => dispatch(checkoutCart())} disabled={checkingOut}>
-							{checkingOut ? "Processing..." : "Checkout"}
-						</Button>
-					</Row>
+				{cart.length > 0 ? (
+					<>
+						<Row>Total calories: {totalCalories}</Row>
+						<Row>
+							<Button onClick={checkout} disabled={isCheckingOut}>
+								{isCheckingOut ? "Processing..." : "Checkout"}
+							</Button>
+						</Row>
+					</>
 				) : (
 					<Row>
 						<Col>Cart is empty</Col>

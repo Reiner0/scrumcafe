@@ -3,8 +3,14 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"start": "export PORT=3001 && node ./bin/www",
-		"start:win": "set PORT=3001 && node ./bin/www"
+		"server": "yarn run build && export PORT=3001 && node ./dist/bin/www",
+		"server:win": "yarn run build && set PORT=3001 && node ./dist/bin/www",
+		"transpile": "babel src -d dist",
+		"clean": "rimraf dist",
+		"build": "yall clean transpile",
+		"restart": "yall clean server:win",
+		"dev": "export NODE_ENV=development && yall build server",
+		"dev:win": "set NODE_ENV=development && nodemon --exec yarn run restart"
 	},
 	"dependencies": {
 		"cookie-parser": "~1.4.4",
@@ -12,7 +18,32 @@
 		"express": "~4.16.1",
 		"http-errors": "~1.6.3",
 		"jade": "~1.11.0",
-		"lowdb": "^1.0.0",
-		"morgan": "~1.9.1"
+		"lowdb": "1",
+		"morgan": "~1.9.1",
+		"yall-scripts": "^1.2.0"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.14.3",
+		"@babel/core": "^7.14.3",
+		"@babel/preset-env": "^7.14.4",
+		"nodemon": "^2.0.7",
+		"rimraf": "^3.0.2"
+	},
+	"babel": {
+		"presets": [
+			"@babel/preset-env"
+		]
+	},
+	"nodemonConfig": {
+		"exec": "yarn run dev:win",
+		"watch": [
+			"src/*",
+			"public/*"
+		],
+		"ignore": [
+			"**/__tests__/**",
+			"*.test.js",
+			"*.spec.js"
+		]
 	}
 }

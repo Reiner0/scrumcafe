@@ -1,28 +1,17 @@
-import { useEffect } from "react";
+import { useRecoilValueLoadable, useRecoilState } from "recoil";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
 
+import { cartStatusState, menuState } from "../../recoil/atoms";
 import MenuItem from "./MenuItem";
-import { selectMenuItems, fetchItems } from "./menuSlice";
-import { selectCartStatus, reset } from "../cart/cartSlice";
 
 const Menu = () => {
-	const dispatch = useDispatch();
-	const menuItems = useSelector(selectMenuItems);
-	const menuStatus = useSelector((state) => state.menu.status);
-	const cartStatus = useSelector(selectCartStatus);
-	const checkingOut = cartStatus === "pending";
-	const complete = cartStatus === "succeeded";
+	const { state, contents: menuItems } = useRecoilValueLoadable(menuState);
+	const [cartStatus, setCartStatus] = useRecoilState(cartStatusState);
+	const { isComplete, isCheckingOut } = cartStatus;
 
-	useEffect(() => {
-		if (menuStatus === "idle") {
-			dispatch(fetchItems());
-		}
-	}, [menuStatus, dispatch]);
-
-	if (complete) {
+	if (isComplete) {
 		return (
 			<>
 				<Row>
@@ -30,7 +19,11 @@ const Menu = () => {
 				</Row>
 				<Row>
 					<Col>
-						<Button onClick={() => dispatch(reset())}>Continue Shopping</Button>
+						<Button
+							onClick={() => setCartStatus((oldStatus) => ({ ...oldStatus, isComplete: false }))}
+						>
+							Continue Shopping
+						</Button>
 					</Col>
 				</Row>
 			</>
@@ -41,9 +34,13 @@ const Menu = () => {
 				<Row>
 					<h4>Menu</h4>
 				</Row>
-				{menuItems.map((menuItem) => (
-					<MenuItem key={menuItem.id} item={menuItem} disabled={checkingOut} />
-				))}
+				{state === "hasValue" ? (
+					menuItems.map((menuItem) => (
+						<MenuItem key={menuItem.id} item={menuItem} disabled={isCheckingOut} />
+					))
+				) : (
+					<div>Loading...</div>
+				)}
 			</Col>
 		);
 	}

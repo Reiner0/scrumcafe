@@ -1,11 +1,29 @@
+import { useSetRecoilState } from "recoil";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { useDispatch } from "react-redux";
-import { add } from "../cart/cartSlice";
+import { cartState } from "../../recoil/atoms";
 import Styled from "./styles";
 
 const MenuItem = ({ item, disabled }) => {
-	const dispatch = useDispatch();
+	const setCart = useSetRecoilState(cartState);
+
+	const addItem = () => {
+		setCart((cart) => {
+			const newCart = [...new Set(cart)];
+			const index = newCart.findIndex(({ id }) => id === item.id);
+			if (index >= 0) {
+				const existingItem = newCart[index];
+				newCart.splice(index, 1, {
+					...item,
+					qty: existingItem.qty + 1,
+				});
+			} else {
+				newCart.push({ ...item, qty: 1 });
+			}
+			localStorage.setItem("cart", JSON.stringify(newCart));
+			return newCart;
+		});
+	};
 
 	return (
 		<Styled.MenuItem>
@@ -14,7 +32,7 @@ const MenuItem = ({ item, disabled }) => {
 				<Styled.MenuItemDescription>{item.description}</Styled.MenuItemDescription>
 			</Col>
 			<Col sm="auto">
-				<Button onClick={() => dispatch(add(item))} disabled={disabled}>
+				<Button onClick={addItem} disabled={disabled}>
 					Add to cart
 				</Button>
 			</Col>

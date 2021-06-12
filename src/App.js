@@ -1,17 +1,16 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Provider } from "react-redux";
+import { RecoilRoot } from "recoil";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-import store from "./store";
 import Menu from "./features/menu/Menu";
 import Cart from "./features/cart/Cart";
 
 function App() {
 	return (
-		<Provider store={store}>
+		<RecoilRoot>
 			<Container>
 				<Row>
 					<Col>
@@ -23,7 +22,7 @@ function App() {
 					<Cart />
 				</Row>
 			</Container>
-		</Provider>
+		</RecoilRoot>
 	);
 }
 
